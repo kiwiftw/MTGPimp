@@ -1,36 +1,54 @@
 <html><body><table cellpadding="10">
 <?php
+include("./functions.php");
+error_reporting(E_ALL ^ E_NOTICE);
 ## card parser
-$jsonData = file_get_contents('./AllSets.json', true);
-$json = json_decode($jsonData, true);
 
+$cardArray = [];
+$artCardArray = [];
+$newArray = [];
 $value = $_POST['decklist'];
 if($value == ''){
 	echo 'Decklist is empty, please enter some cards!';
 } else {
-$cardList = explode("\n", $value);
-$count = count($cardList);
-for($i=0;$i<$count;$i++){
-$cardName = $cardList[$i];
-##if $cardName contains foil but does not equal foil or if it equals foil foil 
-/*if(strpos($cardName,'[foil]') == true){
-	$foil = true;
-	#remove foil from the name
-} */
-#capitalize the first letter in each word and lowercase the rest
-$cardName = ucwords($cardName);
-$artCardName = str_replace(' ', '', $cardName);
-$artCardName = str_replace(':', '', $artCardName);
-$artCardName = str_replace("'", '', $artCardName);
-$artCardName = str_replace('-','', $artCardName);
-$artCardName = str_replace(',','', $artCardName);
-$artCardName = str_replace('!','', $artCardName);
-#echo '<pre>';
-#print_r($json);
-$foil = false;
+	$cardList = explode("\n", $value);
+	$count = count($cardList);
+	for($i=0;$i<$count;$i++){
+		# 'Sanitize' the card name for searching on json
+		$cardName = $cardList[$i];
+		$cardName = ucwords($cardName);
+		$artCardName = str_replace(' ', '', $cardName);
+		$artCardName = str_replace(':', '', $artCardName);
+		$artCardName = str_replace("'", '', $artCardName);
+		$artCardName = str_replace('-','', $artCardName);
+		$artCardName = str_replace(',','', $artCardName);
+		$artCardName = str_replace('!','', $artCardName);
+		array_push($artCardArray, trim($artCardName));
+		array_push($cardArray, trim($cardName));
+	}
+}
+##Array is set with 'sanitized' card names. Time to do some perusal of json!
+
+##Call the 3 different functions to return foil editions, foreign editions, and then the rest
+for($i=0;$i<count($cardArray);$i++){
+	## Returns ALL editions a card was printed in including supplimental sets
+	#print($cardArray[$i]);
+	$editions = getEditions($cardArray[$i]);
+	print($cardArray[$i]);
+	print("<br />");
+	print_r($editions);
+	print("<br />");
+	## Of those sets, return which sets were printed in a foreign language 
+	#getLanguages($cardArray[$i]);
+
+	## Of those sets, return which sets has foils
+	#getFoils($cardArray[$i]);
+
+}
+/*
 ### Echo out the information about the sets
-#echo '<b>' . $cardName . '</b>:';
-?> 
+?>
+
 <tr><td><b><?=$cardName?></b></td></tr><tr>
 <?php
 foreach($json as $key => $value){
@@ -57,6 +75,7 @@ foreach($json as $key => $value){
 				echo '<td align="center"><b>' . $edition . '</b><br /><img src="' . $cardURL . '" height="222.5px" width="156px"/></td>';
 			} else {
 				foreach($json[$key]['translations'] as $key => $value){
+					
 					if($y==0){
 						$language = 'EN';
 					} else { $language = strtoupper($key); }
@@ -78,4 +97,4 @@ foreach($json as $key => $value){
 ?></tr><?php
 }
 }
-?> </table></body></html>
+?>*/?> </table></body></html>

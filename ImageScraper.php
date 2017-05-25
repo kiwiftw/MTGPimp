@@ -141,7 +141,7 @@ foreach($json as $key => $value){
 		//magiccards.info parser!
 		for($i=0;$i<9;$i++){
 			$language = $langArray[$i];
-			echo $cardNumber;
+			
 			$cardURL = "magiccards.info/scans/" . $language . "/" . $mcSet . "/" . $cardNumber . ".jpg";
 
 
