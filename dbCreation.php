@@ -53,7 +53,7 @@ Language VARCHAR(30) NOT NULL
 )";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Cards table added successfully";
+    echo "Cards table added successfully. <br/>";
 } else {
     echo "Error adding table: " . $conn->error;
 }
@@ -64,7 +64,7 @@ Language VARCHAR(30) NOT NULL
 )";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Languages table added successfully";
+    echo "Languages table added successfully. <br/>";
 } else {
     echo "Error adding table: " . $conn->error;
 }
@@ -93,7 +93,7 @@ $sql .= "INSERT INTO Languages (Language)
 VALUES ('Spanish');";
 
 if ($conn->multi_query($sql) === TRUE) {
-    echo "New records created successfully";
+    echo "New records created successfully. <br/>";
 } else {
     echo "Error: " . $sql . "<br>" . $conn->error;
 }
