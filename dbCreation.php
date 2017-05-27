@@ -69,7 +69,34 @@ if ($conn->query($sql) === TRUE) {
     echo "Error adding table: " . $conn->error;
 }
 
+$sql = "INSERT INTO Languages (Language)
+VALUES ('English');";
+$sql .= "INSERT INTO Languages (Language)
+VALUES ('Chinese Simplified');";
+$sql .= "INSERT INTO Languages (Language)
+VALUES ('Chinese Traditional');";
+$sql .= "INSERT INTO Languages (Language)
+VALUES ('French');";
+$sql .= "INSERT INTO Languages (Language)
+VALUES ('German');";
+$sql .= "INSERT INTO Languages (Language)
+VALUES ('Italian');";
+$sql .= "INSERT INTO Languages (Language)
+VALUES ('Japanese');";
+$sql .= "INSERT INTO Languages (Language)
+VALUES ('Korean');";
+$sql .= "INSERT INTO Languages (Language)
+VALUES ('Portuguese');";
+$sql .= "INSERT INTO Languages (Language)
+VALUES ('Russian');";
+$sql .= "INSERT INTO Languages (Language)
+VALUES ('Spanish');";
+
+if ($conn->multi_query($sql) === TRUE) {
+    echo "New records created successfully";
+} else {
+    echo "Error: " . $sql . "<br>" . $conn->error;
+}
+
 $conn->close();
-
-
 ?>
