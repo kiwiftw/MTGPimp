@@ -309,7 +309,7 @@ $time_pre = microtime(true);
 
 $servername = "localhost";
 $username = "pcort";
-$password = "Ski23hike$";
+$password = "notreal";
 $dbname = "MTGPimp";
 
 // Create connection
