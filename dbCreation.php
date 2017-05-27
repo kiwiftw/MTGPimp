@@ -39,7 +39,7 @@ $dbname = "MTGPimp";
 $conn = new mysqli($servername, $username, $password, $dbname);
 // Check connection
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    die("Connection failed: " . $conn->connect_error) . "<br/>";
 } 
 
 $sql = "CREATE TABLE Cards(
@@ -55,7 +55,7 @@ Language VARCHAR(30) NOT NULL
 if ($conn->query($sql) === TRUE) {
     echo "Cards table added successfully. <br/>";
 } else {
-    echo "Error adding table: " . $conn->error;
+    echo "Error adding table: " . $conn->error . "<br/>";
 }
 
 $sql = "CREATE TABLE Languages(
@@ -66,7 +66,7 @@ Language VARCHAR(30) NOT NULL
 if ($conn->query($sql) === TRUE) {
     echo "Languages table added successfully. <br/>";
 } else {
-    echo "Error adding table: " . $conn->error;
+    echo "Error adding table: " . $conn->error . "<br/>";
 }
 
 $sql = "INSERT INTO Languages (Language)
@@ -95,7 +95,7 @@ VALUES ('Spanish');";
 if ($conn->multi_query($sql) === TRUE) {
     echo "New records created successfully. <br/>";
 } else {
-    echo "Error: " . $sql . "<br>" . $conn->error;
+    echo "Error: " . $sql . "<br>" . $conn->error . "<br/>";
 }
 
 $conn->close();
