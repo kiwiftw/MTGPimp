@@ -32,7 +32,7 @@ PK_ID	|  Language  	|
 */
 $servername = "localhost";
 $username = "pcort";
-$password = "password";
+$password = "Ski23hike$";
 $dbname = "MTGPimp";
 
 // Create connection
