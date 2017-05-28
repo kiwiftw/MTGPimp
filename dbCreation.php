@@ -30,7 +30,10 @@ PK_ID	|  Language  	|
 
 
 */
-$config = parse_ini_file('../private/config.ini'); 
+$ini_path = php_ini_loaded_file("../private/config.ini");
+
+// Parse php.ini
+$config = parse_ini_file($ini_path);
 $conn = mysqli_connect($config['servername'],$config['username'],$config['password'],$config['dbname']);
 // Check connection
 if ($conn->connect_error) {
