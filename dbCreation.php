@@ -30,19 +30,14 @@ PK_ID	|  Language  	|
 
 
 */
-$servername = "localhost";
-$username = "pcort";
-$password = "notreal";
-$dbname = "MTGPimp";
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+$config = parse_ini_file('../private/config.ini'); 
+$conn = mysqli_connect($config['servername'],$config['username'],$config['password'],$config['dbname']);
 // Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error) . "<br/>";
 } 
 
-$sql = "CREATE TABLE Cards(
+$sql = "CREATE TABLE IF NOT EXISTS Cards(
 id INT(12) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 CardName VARCHAR(30) NOT NULL,
 Border VARCHAR(5) NOT NULL,
@@ -58,45 +53,45 @@ if ($conn->query($sql) === TRUE) {
     echo "Error adding table: " . $conn->error . "<br/>";
 }
 
-$sql = "CREATE TABLE Languages(
+$sql = "CREATE TABLE IF NOT EXISTS Languages(
 id INT(12) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 Language VARCHAR(30) NOT NULL
 )";
 
 if ($conn->query($sql) === TRUE) {
     echo "Languages table added successfully. <br/>";
+    $sql = "INSERT INTO Languages (Language)
+	VALUES ('English');";
+	$sql .= "INSERT INTO Languages (Language)
+	VALUES ('Chinese Simplified');";
+	$sql .= "INSERT INTO Languages (Language)
+	VALUES ('Chinese Traditional');";
+	$sql .= "INSERT INTO Languages (Language)
+	VALUES ('French');";
+	$sql .= "INSERT INTO Languages (Language)
+	VALUES ('German');";
+	$sql .= "INSERT INTO Languages (Language)
+	VALUES ('Italian');";
+	$sql .= "INSERT INTO Languages (Language)
+	VALUES ('Japanese');";
+	$sql .= "INSERT INTO Languages (Language)
+	VALUES ('Korean');";
+	$sql .= "INSERT INTO Languages (Language)
+	VALUES ('Portuguese');";
+	$sql .= "INSERT INTO Languages (Language)
+	VALUES ('Russian');";
+	$sql .= "INSERT INTO Languages (Language)
+	VALUES ('Spanish');";
+	if ($conn->multi_query($sql) === TRUE) {
+	    echo "New records created successfully. <br/>";
+	} else {
+	    echo "Error: " . $sql . "<br>" . $conn->error . "<br/>";
+	}
 } else {
     echo "Error adding table: " . $conn->error . "<br/>";
 }
 
-$sql = "INSERT INTO Languages (Language)
-VALUES ('English');";
-$sql .= "INSERT INTO Languages (Language)
-VALUES ('Chinese Simplified');";
-$sql .= "INSERT INTO Languages (Language)
-VALUES ('Chinese Traditional');";
-$sql .= "INSERT INTO Languages (Language)
-VALUES ('French');";
-$sql .= "INSERT INTO Languages (Language)
-VALUES ('German');";
-$sql .= "INSERT INTO Languages (Language)
-VALUES ('Italian');";
-$sql .= "INSERT INTO Languages (Language)
-VALUES ('Japanese');";
-$sql .= "INSERT INTO Languages (Language)
-VALUES ('Korean');";
-$sql .= "INSERT INTO Languages (Language)
-VALUES ('Portuguese');";
-$sql .= "INSERT INTO Languages (Language)
-VALUES ('Russian');";
-$sql .= "INSERT INTO Languages (Language)
-VALUES ('Spanish');";
 
-if ($conn->multi_query($sql) === TRUE) {
-    echo "New records created successfully. <br/>";
-} else {
-    echo "Error: " . $sql . "<br>" . $conn->error . "<br/>";
-}
 
 $conn->close();
 ?>

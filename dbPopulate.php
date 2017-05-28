@@ -307,13 +307,9 @@ function addNew($json, $conn){
 ### END FUNCTION SECTION ###
 $time_pre = microtime(true);
 
-$servername = "localhost";
-$username = "pcort";
-$password = "notreal";
-$dbname = "MTGPimp";
-
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+$config = parse_ini_file('../private/config.ini'); 
+$conn = mysqli_connect($config['servername'],$config['username'],$config['password'],$config['dbname']);
+   
 // Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
