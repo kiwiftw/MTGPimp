@@ -57,34 +57,34 @@ if ($conn->query($sql) === TRUE) {
 }
 
 $sql = "CREATE TABLE IF NOT EXISTS Languages(
-id INT(12) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+pk_id INT(12) UNSIGNED PRIMARY KEY,
 Language VARCHAR(30) NOT NULL
 )";
 
 if ($conn->query($sql) === TRUE) {
     echo "Languages table added successfully. <br/>";
-    $sql = "INSERT INTO Languages (Language)
-	VALUES ('English');";
-	$sql .= "INSERT INTO Languages (Language)
-	VALUES ('Chinese Simplified');";
-	$sql .= "INSERT INTO Languages (Language)
-	VALUES ('Chinese Traditional');";
-	$sql .= "INSERT INTO Languages (Language)
-	VALUES ('French');";
-	$sql .= "INSERT INTO Languages (Language)
-	VALUES ('German');";
-	$sql .= "INSERT INTO Languages (Language)
-	VALUES ('Italian');";
-	$sql .= "INSERT INTO Languages (Language)
-	VALUES ('Japanese');";
-	$sql .= "INSERT INTO Languages (Language)
-	VALUES ('Korean');";
-	$sql .= "INSERT INTO Languages (Language)
-	VALUES ('Portuguese');";
-	$sql .= "INSERT INTO Languages (Language)
-	VALUES ('Russian');";
-	$sql .= "INSERT INTO Languages (Language)
-	VALUES ('Spanish');";
+    $sql = "INSERT INTO Languages (pk_id, Language)
+	VALUES (1, 'English');";
+	$sql .= "INSERT INTO Languages (pk_id, Language)
+	VALUES (2, 'Chinese Simplified');";
+	$sql .= "INSERT INTO Languages (pk_id, Language)
+	VALUES (3, 'Chinese Traditional');";
+	$sql .= "INSERT INTO Languages (pk_id, Language)
+	VALUES (4, 'French');";
+	$sql .= "INSERT INTO Languages (pk_id, Language)
+	VALUES (5, 'German');";
+	$sql .= "INSERT INTO Languages (pk_id, Language)
+	VALUES (6, 'Italian');";
+	$sql .= "INSERT INTO Languages (pk_id, Language)
+	VALUES (7, 'Japanese');";
+	$sql .= "INSERT INTO Languages (pk_id, Language)
+	VALUES (8, 'Korean');";
+	$sql .= "INSERT INTO Languages (pk_id, Language)
+	VALUES (9, 'Portuguese');";
+	$sql .= "INSERT INTO Languages (pk_id, Language)
+	VALUES (10, 'Russian');";
+	$sql .= "INSERT INTO Languages (pk_id, Language)
+	VALUES (11, 'Spanish');";
 	if ($conn->multi_query($sql) === TRUE) {
 	    echo "New records created successfully. <br/>";
 	} else {
