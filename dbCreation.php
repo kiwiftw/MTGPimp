@@ -64,27 +64,27 @@ Language VARCHAR(30) NOT NULL
 if ($conn->query($sql) === TRUE) {
     echo "Languages table added successfully. <br/>";
     $sql = "INSERT INTO Languages (pk_id, Language)
-	VALUES (1, 'English');";
+	VALUES ('1', 'English');";
 	$sql .= "INSERT INTO Languages (pk_id, Language)
-	VALUES (2, 'Chinese Simplified');";
+	VALUES ('2', 'Chinese Simplified');";
 	$sql .= "INSERT INTO Languages (pk_id, Language)
-	VALUES (3, 'Chinese Traditional');";
+	VALUES ('3', 'Chinese Traditional');";
 	$sql .= "INSERT INTO Languages (pk_id, Language)
-	VALUES (4, 'French');";
+	VALUES ('4', 'French');";
 	$sql .= "INSERT INTO Languages (pk_id, Language)
-	VALUES (5, 'German');";
+	VALUES ('5', 'German');";
 	$sql .= "INSERT INTO Languages (pk_id, Language)
-	VALUES (6, 'Italian');";
+	VALUES ('6', 'Italian');";
 	$sql .= "INSERT INTO Languages (pk_id, Language)
-	VALUES (7, 'Japanese');";
+	VALUES ('7', 'Japanese');";
 	$sql .= "INSERT INTO Languages (pk_id, Language)
-	VALUES (8, 'Korean');";
+	VALUES ('8', 'Korean');";
 	$sql .= "INSERT INTO Languages (pk_id, Language)
-	VALUES (9, 'Portuguese');";
+	VALUES ('9', 'Portuguese');";
 	$sql .= "INSERT INTO Languages (pk_id, Language)
-	VALUES (10, 'Russian');";
+	VALUES ('10', 'Russian');";
 	$sql .= "INSERT INTO Languages (pk_id, Language)
-	VALUES (11, 'Spanish');";
+	VALUES ('11', 'Spanish');";
 	if ($conn->multi_query($sql) === TRUE) {
 	    echo "New records created successfully. <br/>";
 	} else {
