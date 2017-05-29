@@ -1,4 +1,4 @@
-{
+{"LEA":{
   "name": "Limited Edition Alpha",
   "code": "LEA",
   "gathererCode": "1E",
@@ -7295,4 +7295,5 @@
       ]
     }
   ]
+}
 }
