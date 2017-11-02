@@ -44,7 +44,8 @@ FK_SetName  |  FK_LanguageID
 
 */
 
-inclue("./functions.php");
+$functionsFile = $_SERVER['DOCUMENT_ROOT'] . "/Admin/functions.php";
+include("functionsFile");
 $conn = getConnection();
 // Check connection
 if ($conn->connect_error) {

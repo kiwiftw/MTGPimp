@@ -1,17 +1,17 @@
 <?php
-## Load json into memory for faster parsing
-## Function calls for everything
-## Maintain 
-## Create admin portal that allows for adding new cards and sets and such (pass url to download card art)
-## Parse the JSON and remove online only sets
-## Parse json and remove extranious information. 
-## Remove from Set Information: "gathererCode", "magicCardsInfoCode","releaseDate","type","booster","mkm_name","mkm_id"
-## Remove from Card Infommation: "cmc", "colorIdentity","colors","flavor","id",'imageName,'layout','manaCost','mciNumber','multiverseid','power','rarity','subtypes','text','toughness','type','types'
-error_reporting(E_ALL ^ E_NOTICE);
 
 #This section is for generic functions used across all pages
+function processSQL($sql, $conn){
+	if ($conn->query($sql) === TRUE) {
+		# Worked, not putting any user output here.   
+	} else {
+	    echo mysqli_error($conn);
+	}
+}
 function getConnection(){
-	$config = parse_ini_file('./private/config.ini'); 
+	# Parse ini file that holds all configuration data and create connection. 
+	$ini = $_SERVER['DOCUMENT_ROOT'] . "/private/config.ini";
+	$config = parse_ini_file($ini); 
 	$servername = base64_decode($config['servername']);
 	$username = base64_decode($config['username']);
 	$password = base64_decode($config['password']);
@@ -23,6 +23,9 @@ function getConnection(){
 
 # This section is for functions related to the admin page 
 function isFoil($setShort, $name){
+	# Quick and dirty way to establish the non-foil sets.  There are some exceptions where in sets some foil cards were printed (ie commanders in commander product)
+	# There will be a second section for 'outliers' that don't follow the bulk rules. 
+
 	$nonFoilArray = array("LEA", "LEB", "2ED", "3ED", "4ED", "5ED", "6ED", "ARN", "ATQ", "LEG", "DRK", "FEM", "HML", "ICE", "ALL", "CSP", "MIR", "VIS", "WTH", "TMP", "STH", "EXO", "USG", "CHR", "ATH", "POR", "PO2", "PTK", "CEI", "VAN", "ITP", "MGB", "pCEL", "pARL", "RQS", "pLGM", "pMEI", "CED", "pDRC", "pPRE", "pJGP", "UGL", "pALP", "ULG", "UDS", "S99", "pGRU", "pWOR", "pWOS", "MMQ", "BRB", "pSUS", "pFNM", "pELP", "NMS", "S00", "PCY", "BTD", "pMPR", "APC", "DKM", "pGTW", "pHHO", "pGPX", "pMGD", "MED", "pLPA", "pSUM", "ME2", "pWPN", "DD2", "DDC", "DDD", "DDE", "DDF", "DDG", "DDH", "DDI", "DDJ", "DDK", "DDL", "DDM", "DDN", "DD3", "DDO", "DDP", "ME3", "HO9", "PD2", "PD3", "HOP", "PC2", "CMD", "CM1", "C13", "C14", "C15", "ME4", "VMA", "TPR", "pPOD", "pCMP", "CST", "TSB", "EVG", "DPA", "ARC", "DD3_DVD", "DD3_EVG", "DD3_GVL", "DD3_JVC", "FRF_UGIN");
 	if (in_array($setShort, $nonFoilArray)) {
 		return "No";
@@ -32,7 +35,12 @@ function isFoil($setShort, $name){
 }
 
 function addSet($setData, $conn, $safeSet){
-	$frame = mysqli_real_escape_string($conn,$setData["Frame"]);
+	# Adds a set to the database.  
+	# Update all them datas if there's a duplicate. (Run into issues creating multiples)
+	# This function parses the setData json for the specific set information and then adds to Sets table.
+	# Languages are an array so parsing that separately so I can also populate the JoinLanguages table at the same time
+
+	$frame = $conn->escape_string($setData["Frame"]);
 	$border = mysqli_real_escape_string($conn,$setData["Border"]);
 	$sql = "INSERT INTO Sets (PK_SetName, Border, Frame)
 		VALUES ('$safeSet', '$border', '$frame')
@@ -40,15 +48,18 @@ function addSet($setData, $conn, $safeSet){
 		UPDATE 	PK_SetName='$safeSet',
 				Border='$border',
 				Frame='$frame';";
-	if ($conn->query($sql) === TRUE) {
-		echo "$safeSet sets table has been updated properly. <br/>";	   
-	} else {
-	    echo mysqli_error($conn);
-	}
+	processSQL($sql, $conn);
 
-	$language = $setData["Languages"];
+	# Moving onto the languages section.  
+	# Verify that all languages are up to date
+	addLanguages($conn);
+
+	# Shrek the existing join languages table for the set data since we can't run an update because it's all FK's. 
+	$sql = "DELETE FROM JoinLanguages WHERE FK_SetName = '$safeSet';";
+	processSQL($sql, $conn);
 
 	# Look at the language and poll the db for the pk_id of the languages table to add to the setname and languagesid to the JoinLanguages table
+	$language = $setData["Languages"];
 	$langCount = count($language);
 	for($x=0;$x<$langCount;$x++){
 		$val = $language[$x];
@@ -60,17 +71,15 @@ function addSet($setData, $conn, $safeSet){
 			# Update the JoinLanguages table
 			$sql = "INSERT INTO JoinLanguages (FK_SetName, FK_LanguageID)
 					VALUES ('$safeSet', '$id');";
-			if ($conn->query($sql) === TRUE) {
-				# Worked, not putting any user output here.   
-			} else {
-			    echo mysqli_error($conn);
-			}
+			processSQL($sql, $conn);
 		} else { echo mysqli_error($conn); }
 	}
-	echo "Successfully updated JoinLanguages table <br />";
 }
 
 function addCards($conn, $set, $setShort){
+	# Adds all the card data to the Cards table. 
+	# Parse the AllSets json 
+
 	$cardData = file_get_contents('./AllSets.json', true);
 	#$cardData =  file_get_contents('../LEA.json', true);  # Use this line for testing purposes.
 	$cardJson = json_decode($cardData, true);
@@ -79,7 +88,7 @@ function addCards($conn, $set, $setShort){
 		if($setShort == $key){
 			$count = count($value['cards']);
 			for($x=0;$x<$count;$x++){
-				$artist = $value['cards'][$x]['artist'];
+				$artist = mysqli_real_escape_string($conn, $value['cards'][$x]['artist']); //because someone decided it would be fun to have the last name o'connor
 				$cardName = mysqli_real_escape_string($conn, $value['cards'][$x]['name']);
 				$id = $value['cards'][$x]['id'];
 				$foil = isFoil($setShort, $cardName);
@@ -92,11 +101,7 @@ function addCards($conn, $set, $setShort){
 								FK_SetName='$safeSet',
 								Artist='$artist',
 								Foil='$foil';";
-				if ($conn->query($sql) === TRUE) {
-					## Worked, no need to fill up the screen :)	   
-				} else {
-				    echo mysqli_error($conn);
-				}
+				processSQL($sql, $conn);
 			}
 		}
 	}
@@ -128,17 +133,10 @@ function refreshSpecific($set, $conn){
 	
 	# Drop the join tables in case things were updated due to inaccurate info originally
 	$sql = "DELETE FROM JoinCards WHERE FK_SetName = '$safeSet';";
-	if ($conn->query($sql) === TRUE) {
-		echo "Successfully Deleted JoinCards Data <br/>";   
-	} else {
-	    echo mysqli_error($conn);
-	}
+	processSQL($sql, $conn);
+
 	$sql = "DELETE FROM JoinLanguages WHERE FK_SetName = '$safeSet';";
-	if ($conn->query($sql) === TRUE) {
-		echo "Successfully Deleted JoinLanguages Data <br/>";
-	} else {
-	    echo mysqli_error($conn);
-	}
+	processSQL($sql, $conn);
 
 	# Get the json data about the set and pass it into the 'add set' function
 	$count = count($setJson);
@@ -160,6 +158,12 @@ function loadJson(){
 	return $json;
 }
 
+function addLanguages($conn){
+	# These shouldn't be updated regularly so I'm adding them as static data here. Easier to update from their own special function if need for update arises
+	$sql = "INSERT IGNORE INTO Languages (PK_LanguageID, LanguageName)
+	VALUES ('1', 'English'), ('2', 'Chinese Simplified'), ('3', 'Chinese Traditional'), ('4', 'French'), ('5', 'German'), ('6', 'Italian'), ('7', 'Japanese'), ('8', 'Portuguese'), ('9', 'Russian'), ('10', 'Spanish'), ('11', 'Korean');";  
+  	processSQL($sql, $conn);
+}
 
 
 # This section is for functions related to returning the cards to the user. 
