@@ -16,8 +16,9 @@ function getConnection(){
 	$username = base64_decode($config['username']);
 	$password = base64_decode($config['password']);
 	$dbname = base64_decode($config['dbname']);
+	$dbport = base64_decode($config['dbport']);
 
-	$conn = mysqli_connect($servername, $username, $password, $dbname);
+	$conn = mysqli_connect($servername, $username, $password, $dbname, $dbport);
 	return $conn;
 }
 
