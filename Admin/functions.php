@@ -34,20 +34,22 @@ function isFoil($setShort, $name){
 	} 
 }
 
-function addSet($setData, $conn, $safeSet){
+function addSet($setData, $conn, $safeSet, $setShort){
 	# Adds a set to the database.  
 	# Update all them datas if there's a duplicate. (Run into issues creating multiples)
 	# This function parses the setData json for the specific set information and then adds to Sets table.
 	# Languages are an array so parsing that separately so I can also populate the JoinLanguages table at the same time
 
+	$setShort = $setData["ShortName"];
 	$frame = $conn->escape_string($setData["Frame"]);
 	$border = mysqli_real_escape_string($conn,$setData["Border"]);
-	$sql = "INSERT INTO Sets (PK_SetName, Border, Frame)
-		VALUES ('$safeSet', '$border', '$frame')
+	$sql = "INSERT INTO Sets (PK_SetName, Border, Frame, ShortName)
+		VALUES ('$safeSet', '$border', '$frame', '$setShort')
 		ON DUPLICATE KEY
 		UPDATE 	PK_SetName='$safeSet',
 				Border='$border',
-				Frame='$frame';";
+				Frame='$frame',
+				ShortName='$setShort';";
 	processSQL($sql, $conn);
 
 	# Moving onto the languages section.  
@@ -120,8 +122,8 @@ function refreshAll($conn){
 		$setData = $setJson[$x];
 		$set = $setJson[$x]['SetName'];
 		$safeSet = mysqli_real_escape_string($conn, $set);
-		addSet($setData, $conn, $safeSet);
 		$setShort = $setJson[$x]['ShortName'];
+		addSet($setData, $conn, $safeSet, $setShort);
 		addCards($conn, $set, $setShort);
 	}
 }
@@ -132,11 +134,8 @@ function refreshSpecific($set, $conn){
 	$safeSet = mysqli_real_escape_string($conn, $set);
 	
 	# Drop the join tables in case things were updated due to inaccurate info originally
-	$sql = "DELETE FROM JoinCards WHERE FK_SetName = '$safeSet';";
-	processSQL($sql, $conn);
-
-	$sql = "DELETE FROM JoinLanguages WHERE FK_SetName = '$safeSet';";
-	processSQL($sql, $conn);
+#	$sql = "DELETE FROM JoinLanguages WHERE FK_SetName = '$safeSet';";
+#	processSQL($sql, $conn);
 
 	# Get the json data about the set and pass it into the 'add set' function
 	$count = count($setJson);
@@ -144,9 +143,11 @@ function refreshSpecific($set, $conn){
 		if($setJson[$x]['SetName'] == $set){
 			$setData = $setJson[$x];
 			$setShort = $setJson[$x]['ShortName'];
+			break;
 		}
 	}
-	addSet($setData, $conn, $safeSet);
+
+	addSet($setData, $conn, $safeSet, $setShort);
 
 	addCards($conn, $set, $setShort);
 }
@@ -191,7 +192,7 @@ function getCard($conn, $name) {
 	## Should return an array of cards. CardName, SetName, Artist, Foil, Border, Frame, Languages
 	$returnCardArray = array();
 	$safeCard = mysqli_real_escape_string($conn, preg_replace( "/\r|\n/", "", $name));
-	$sql = "SELECT `CardName`, `PK_SetName`, `Artist`, `Foil`, `Border`, `Frame` 
+	$sql = "SELECT `CardName`, `PK_SetName`, `Artist`, `Foil`, `Border`, `Frame`, `ShortName`
 			FROM Cards 
 			INNER JOIN Sets 
 				on Sets.PK_SetName = Cards.FK_SetName 
@@ -199,7 +200,7 @@ function getCard($conn, $name) {
 
 	if ($result = $conn->query($sql)) {
 		while ($row = $result->fetch_assoc()) {
-        	$setArray = array('CardName' => $row['CardName'],  'SetName' => $row['PK_SetName'], 'Artist' => $row['Artist'], 'Foil' => $row['Foil'], 'Border' => $row['Border'], 'Frame' => $row['Frame']);
+        	$setArray = array('CardName' => $row['CardName'],  'SetName' => $row['PK_SetName'], 'Artist' => $row['Artist'], 'Foil' => $row['Foil'], 'Border' => $row['Border'], 'Frame' => $row['Frame'], 'ShortName' => $row['ShortName']);
         	$safeSet = mysqli_real_escape_string($conn, $row["PK_SetName"]);
 
         	$sql = "SELECT `LanguageName` 
@@ -228,18 +229,34 @@ function getImage($name, $set, $language) {
 }
 
 function outputCards($cardArray){
-	echo $cardArray['SetName'] . " ";
-	echo $cardArray['Artist'] . " ";
-	echo $cardArray['Border'] . " ";
-	echo $cardArray['Foil'] . " ";
-	echo $cardArray['Frame'] . " ";
-	
-	#Parse languages array
 	$langCount = count($cardArray['Languages']);
 	for($x=0;$x<$langCount;$x++){
-		echo $cardArray['Languages'][$x] . " ";
+		if($cardArray['Foil'] == 'Yes'){
+			$foilDir = "Foil";
+		} else { $foilDir = "Nonfoil"; }
+		$cardName = preg_replace('/\s/', '', $cardArray['CardName']);
+		$imgDir = "/img/" . $cardArray['ShortName'] . "/" . $cardArray['Languages'][$x] . "/" . $foilDir . "/" . $cardName . ".jpg";
+		
+	?>
+		<div class="col-sm-2">
+			<div class="container">
+				<div class="card">
+					<center><img class="card-img-top" src="/img/AbbotofKeralKeep.jpg" alt="<?php echo $imgDir?>">
+					<div class="card-body">
+		        		<div class="overlay">
+			        	<h4 class="card-title"><?php echo "<br/>". $cardArray['SetName'] . "<br/>"?></h4>
+			        	<p class="card-text"><?php echo "Artist: " . $cardArray['Artist'] . "<br />" .
+			        								"Border: " . $cardArray['Border'] . "<br />" .
+			        								"Foil: "   . $cardArray['Foil'] . "<br />" .
+			        								"Frame: " . $cardArray['Frame'] . "<br />" . 
+			        								"Language: " . $cardArray['Languages'][$x]?></p>
+			    		</div>
+			    	</div></center>	
+		  		</div>
+	  		</div>
+		</div>
+	<?php
 	}
-	echo "<br />";
 }
 
 ?>
