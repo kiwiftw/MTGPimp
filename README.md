@@ -3,7 +3,7 @@ Find out all the different version and languages of a single card, or an entire 
 
 To use the site, go to mtgpimp.info (or whatever combination of url you'd like!) 
 
-!["mtgpimp home page"](https://i.imgur.com/lZfR7ZC.png)
+!["mtgpimp home page"](<img src="https://i.imgur.com/lZfR7ZC.png" width="400">)
 
 As the text shows, enter your cards, one card per line.  
 
