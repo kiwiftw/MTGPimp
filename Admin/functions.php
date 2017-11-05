@@ -16,9 +16,10 @@ function getConnection(){
 	$username = base64_decode($config['username']);
 	$password = base64_decode($config['password']);
 	$dbname = base64_decode($config['dbname']);
-	$dbport = base64_decode($config['dbport']);
+	#$dbport = base64_decode($config['dbport']);
 
-	$conn = mysqli_connect($servername, $username, $password, $dbname, $dbport);
+	#$conn = mysqli_connect($servername, $username, $password, $dbname, $dbport);
+	$conn = mysqli_connect($servername, $username, $password, $dbname);
 	return $conn;
 }
 
@@ -229,6 +230,34 @@ function getImage($name, $set, $language) {
 
 }
 
+function getSetLanguages($conn, $setName){
+	$safeSet = mysqli_real_escape_string($conn, $setName);
+	$sql = "SELECT `PK_SetName`
+			FROM Sets
+			WHERE `ShortName` = '$setName';";
+	if($result = $conn->query($sql)){
+		while($longNameRow = $result->fetch_assoc()) {
+			$setName = $longNameRow['PK_SetName'];
+		}
+	} else {echo mysqli_error($conn);} 
+
+	$safeSet = mysqli_real_escape_string($conn, $setName);
+	$sql = "SELECT `LanguageName` 
+	FROM JoinLanguages
+	INNER JOIN Sets
+		on Sets.PK_SetName = JoinLanguages.FK_SetName
+	INNER JOIN Languages
+		on Languages.PK_LanguageID = JoinLanguages.FK_LanguageID
+	WHERE Sets.PK_SetName = '$safeSet';";
+	if ($langResult = $conn->query($sql)) {
+		$langArray = array();
+		while ($langRow = $langResult->fetch_assoc()) {
+			array_push($langArray, $langRow['LanguageName']);
+		}
+	} else { echo mysqli_error($conn); }
+	return $langArray;
+}
+
 function outputCards($cardArray){
 	$langCount = count($cardArray['Languages']);
 	for($x=0;$x<$langCount;$x++){
@@ -242,7 +271,7 @@ function outputCards($cardArray){
 		<div class="col-sm-2">
 			<div class="container">
 				<div class="card">
-					<center><img class="card-img-top" src="/img/AbbotofKeralKeep.jpg" alt="<?php echo $imgDir?>">
+					<center><img class="card-img-top" src="<?php echo $imgDir?>" alt="<?php echo $imgDir?>">
 					<div class="card-body">
 		        		<div class="overlay">
 			        	<h4 class="card-title"><?php echo "<br/>". $cardArray['SetName'] . "<br/>"?></h4>
