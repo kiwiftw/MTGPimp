@@ -260,32 +260,49 @@ function getSetLanguages($conn, $setName){
 
 function outputCards($cardArray){
 	$langCount = count($cardArray['Languages']);
-	for($x=0;$x<$langCount;$x++){
-		if($cardArray['Foil'] == 'Yes'){
+	if($cardArray['Foil'] == 'Yes'){
+		$f = 0;
+	} else { 
+		$f = 1;
+	}
+	# do while loop for the foil / non foil cards.  If the db has foil as yes, then pull card from Foil AND NonFoil directory.  
+	# running numerically, run either once or twice depending on value given. 
+	# a foil printing equals 0 so it will run twice and a non foil will equal 1 running once. 
+	while ($f <= 1){
+		if($f == 0){
 			$foilDir = "Foil";
-		} else { $foilDir = "Nonfoil"; }
-		$cardName = preg_replace('/\s/', '', $cardArray['CardName']);
-		$imgDir = "/img/" . $cardArray['ShortName'] . "/" . $cardArray['Languages'][$x] . "/" . $foilDir . "/" . $cardName . ".jpg";
-		
-	?>
-		<div class="col-sm-2">
-			<div class="container">
-				<div class="card">
-					<center><img class="card-img-top" src="<?php echo $imgDir?>" alt="<?php echo $imgDir?>">
-					<div class="card-body">
-		        		<div class="overlay">
-			        	<h4 class="card-title"><?php echo "<br/>". $cardArray['SetName'] . "<br/>"?></h4>
-			        	<p class="card-text"><?php echo "Artist: " . $cardArray['Artist'] . "<br />" .
-			        								"Border: " . $cardArray['Border'] . "<br />" .
-			        								"Foil: "   . $cardArray['Foil'] . "<br />" .
-			        								"Frame: " . $cardArray['Frame'] . "<br />" . 
-			        								"Language: " . $cardArray['Languages'][$x]?></p>
-			    		</div>
-			    	</div></center>	
+		} elseif($f == 1){
+			$foilDir = "Nonfoil";
+		} else { echo "Unknown f value!??!"; }
+		for($x=0;$x<$langCount;$x++){
+			$cardName = preg_replace('/\s/', '', $cardArray['CardName']);
+			$imgDir = "img/" . $cardArray['ShortName'] . "/". $foilDir . "/" . $cardArray['Languages'][$x] ."/" . $cardName . ".jpg";
+			if(file_exists($imgDir)){
+			} else {
+				# image not found. Using mtgback.jpg instead for formatting purposes!
+				$imgDir = "/img/mtgback.jpg";
+			}
+			?>
+			<div class="col-sm-2">
+				<div class="container">
+					<div class="card">
+						<center><img class="card-img-top" src="<?php echo $imgDir?>" alt="<?php echo $imgDir?>">
+						<div class="card-body">
+			        		<div class="overlay">
+				        	<h4 class="card-title"><?php echo "<br/>". $cardArray['SetName'] . "<br/>"?></h4>
+				        	<p class="card-text"><?php echo "Artist: " . $cardArray['Artist'] . "<br />" .
+				        								"Border: " . $cardArray['Border'] . "<br />" .
+				        								"Foil: "   . $cardArray['Foil'] . "<br />" .
+				        								"Frame: " . $cardArray['Frame'] . "<br />" . 
+				        								"Language: " . $cardArray['Languages'][$x]?></p>
+				    		</div>
+				    	</div></center>	
+			  		</div>
 		  		</div>
-	  		</div>
-		</div>
-	<?php
+			</div>
+			<?php
+		}
+		$f++;
 	}
 }
 
