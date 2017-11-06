@@ -35,7 +35,6 @@ function isFoil($setShort, $name){
 		return "Yes";
 	} 
 }
-
 function addSet($setData, $conn, $safeSet, $setShort){
 	# Adds a set to the database.  
 	# Update all them datas if there's a duplicate. (Run into issues creating multiples)
@@ -79,7 +78,6 @@ function addSet($setData, $conn, $safeSet, $setShort){
 		} else { echo mysqli_error($conn); }
 	}
 }
-
 function addCards($conn, $set, $setShort){
 	# Adds all the card data to the Cards table. 
 	# Parse the AllSets json 
@@ -110,7 +108,6 @@ function addCards($conn, $set, $setShort){
 		}
 	}
 }
-
 function refreshAll($conn){
 	$cardData = file_get_contents('./AllSets.json', true);
 	#$cardData =  file_get_contents('../LEA.json', true);  # Use this line for testing purposes.
@@ -129,15 +126,14 @@ function refreshAll($conn){
 		addCards($conn, $set, $setShort);
 	}
 }
-
 function refreshSpecific($set, $conn){
 	$setData = file_get_contents('./SetData.json', true);
 	$setJson = json_decode($setData, true);
 	$safeSet = mysqli_real_escape_string($conn, $set);
 	
 	# Drop the join tables in case things were updated due to inaccurate info originally
-#	$sql = "DELETE FROM JoinLanguages WHERE FK_SetName = '$safeSet';";
-#	processSQL($sql, $conn);
+	#	$sql = "DELETE FROM JoinLanguages WHERE FK_SetName = '$safeSet';";
+	#	processSQL($sql, $conn);
 
 	# Get the json data about the set and pass it into the 'add set' function
 	$count = count($setJson);
@@ -153,24 +149,19 @@ function refreshSpecific($set, $conn){
 
 	addCards($conn, $set, $setShort);
 }
-
 function loadJson(){
 	$file = './AllCards-x.json';
 	$jsonData = file_get_contents($file, true);
 	$json = json_decode($jsonData, true);
 	return $json;
 }
-
 function addLanguages($conn){
 	# These shouldn't be updated regularly so I'm adding them as static data here. Easier to update from their own special function if need for update arises
 	$sql = "INSERT IGNORE INTO Languages (PK_LanguageID, LanguageName)
 	VALUES ('1', 'English'), ('2', 'Chinese Simplified'), ('3', 'Chinese Traditional'), ('4', 'French'), ('5', 'German'), ('6', 'Italian'), ('7', 'Japanese'), ('8', 'Portuguese'), ('9', 'Russian'), ('10', 'Spanish'), ('11', 'Korean');";  
   	processSQL($sql, $conn);
 }
-
-
 # This section is for functions related to returning the cards to the user. 
-
 function getEditions($cardName){
 	#print($cardName);
 	$json = loadJson();
@@ -180,16 +171,12 @@ function getEditions($cardName){
 	}
 	return $edition;
 }
-
 function getFoils($set, $language, $cardName){
 	## grab stuff from 
 	$cardURL = "../MTGImages/" . $set . "/foil/" . $language . "/" . $artCardName . ".jpg"; 
 }
-
 function getForeign($name) {
-	
 }
-
 function getCard($conn, $name) {
 	## Should return an array of cards. CardName, SetName, Artist, Foil, Border, Frame, Languages
 	$returnCardArray = array();
@@ -303,6 +290,111 @@ function outputCards($cardArray){
 			<?php
 		}
 		$f++;
+	}
+}
+
+# Functions for the image scraper page
+function langConvert($language){
+	switch($language){
+		case "English":
+			$shortLang = "en";
+			break;
+		case "French":
+			$shortLang = "fe";
+			break;
+		case "German": 
+			$shortLang = "de";
+			break;
+		case "Italian":
+			$shortLang = "it";
+			break;
+		case "Spanish":
+			$shortLang = "es";
+			break;
+		case "Portuguese":
+			$shortLang = "pt";
+			break; 
+		case "Japanese":
+			$shortLang = "jp";
+			break;
+		case "Chinese Simplified":
+			$shortLang = "cn";
+			break;
+		case "Russian":
+			$shortLang = "ru";
+			break;
+		case "Chinese Traditional":
+			$shortLang = "tw";
+			break;
+		case "Korean":
+			$shortLang = "kr";
+			break;
+	}
+	return $shortLang;
+}
+
+function writeToFile($file, $data){
+	$file = fopen($file, 'a');
+	fwrite($file, $data);
+	fwrite($file, "\n");
+	fclose($file);
+}
+
+function scrapeSpecific($set, $language){
+	$jsonData = file_get_contents('./AllSets.json', true);
+	$json = json_decode($jsonData, true);
+	writeToFile("./cardScrapeLog.log", "Updating card image catalog <br />");
+
+	$conn = getConnection();
+
+	foreach($json as $key => $value){
+		if($key == $set){
+			$languageArray = getSetLanguages($conn, $set);
+			$mcSet = $json[$key]['magicCardsInfoCode'];
+
+			$data = "Starting scraping of " . $set;
+			writeToFile("./cardScrapeLog.log", $data);
+
+			$cards = $json[$key]['cards'];
+			$cardCount = count($cards);
+			for($x=0;$x<$cardCount;$x++){
+				$cardName = $json[$key]['cards'][$x]['name'];
+				if($cardNumber = $json[$key]['cards'][$x]['mciNumber']){
+					$card = getCard($conn, $cardName);
+					#$shortLang = langConvert($language);		
+					$mcSet = strtolower($mcSet);
+					# Parser for magiccards.info
+
+					#$cardURL = "https://magiccards.info/scans/" . $shortLang . "/" . $mcSet . "/" . $cardNumber . ".jpg";
+					$cardURL = "https://magiccards.info/scans/en/" . $mcSet . "/" . $cardNumber . ".jpg";
+					
+					# Parser for starcitygames
+					# $cardURL = "http://static.starcitygames.com/sales/cardscans/MTG/" . $set . "/en/nonfoil/" . $artCardName . ".jpg";
+			
+					$dir = '../img/' . $set . '/nonfoil/' . $language . '/';
+					#$dir = '../img/' . $set . '/nonfoil/English/';
+					if(!file_exists($dir)){
+						mkdir($dir, 0755, true);
+						$errors = error_Get_last();
+					}
+
+					$img = $dir . $cardName . '.jpg';
+
+					if(!file_exists($img)){
+						if(!copy($cardURL, $img)){
+							$data = "Error finding " . $cardName . " on magiccards.info.  " . $cardURL;
+							writeToFile("./cardScrapeLog.log", $data); 
+						} else { }
+					}
+				} else { 
+					$data = "Error finding mciNumber for " . $cardName;
+					writeToFile("./cardScrapeLog.log", $data); 
+				}
+			#$x++;
+			} #while ($cardName != '');
+		} else { 
+			#Don't do anything cause we're not gonna scrape that set! 
+		}
 	}
 }
 
