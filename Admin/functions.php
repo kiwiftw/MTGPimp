@@ -349,7 +349,7 @@ function scrapeSpecific($set, $language){
 
 	# Revamp.  We know the short set as that's what user is inputting to admin page. 
 
-	$json[$set]
+	$json[$set];
 /*	foreach($json as $key => $value){
 
 		if($key == $set){
