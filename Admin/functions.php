@@ -264,6 +264,7 @@ function outputCards($cardArray){
 		for($x=0;$x<$langCount;$x++){
 			$cardName = preg_replace('/\s/', '', $cardArray['CardName']);
 			$imgDir = "img/" . $cardArray['ShortName'] . "/". $foilDir . "/" . $cardArray['Languages'][$x] ."/" . $cardName . ".jpg";
+			echo $imgDir;
 			if(file_exists($imgDir)){
 			} else {
 				# image not found. Using mtgback.jpg instead for formatting purposes!
