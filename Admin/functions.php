@@ -347,7 +347,11 @@ function scrapeSpecific($set, $language){
 
 	$conn = getConnection();
 
-	foreach($json as $key => $value){
+	# Revamp.  We know the short set as that's what user is inputting to admin page. 
+
+	$json[$set]
+/*	foreach($json as $key => $value){
+
 		if($key == $set){
 			$languageArray = getSetLanguages($conn, $set);
 			$mcSet = $json[$key]['magicCardsInfoCode'];
@@ -396,6 +400,7 @@ function scrapeSpecific($set, $language){
 			#Don't do anything cause we're not gonna scrape that set! 
 		}
 	}
+	*/
 }
 
 ?>
