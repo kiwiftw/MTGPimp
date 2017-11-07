@@ -13,7 +13,7 @@ if ($conn->connect_error) {
     PK_SetName VARCHAR(50) PRIMARY KEY,
     Border VARCHAR(5) NOT NULL,
     Frame VARCHAR(10) NOT NULL,
-    ShortName VARCHAR(4) NOT NULL
+    ShortName VARCHAR(7) NOT NULL
     );";
     processSQL($sql,$conn);
 

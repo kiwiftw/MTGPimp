@@ -262,9 +262,9 @@ function outputCards($cardArray){
 			$foilDir = "Nonfoil";
 		} else { echo "Unknown f value!??!"; }
 		for($x=0;$x<$langCount;$x++){
-			$cardName = preg_replace('/\s/', '', $cardArray['CardName']);
+			#$cardName = preg_replace('/\s/', '', $cardArray['CardName']);
+			$cardName = $cardArray['CardName'];
 			$imgDir = "img/" . $cardArray['ShortName'] . "/". $foilDir . "/" . $cardArray['Languages'][$x] ."/" . $cardName . ".jpg";
-			echo $imgDir;
 			if(file_exists($imgDir)){
 			} else {
 				# image not found. Using mtgback.jpg instead for formatting purposes!
@@ -274,7 +274,7 @@ function outputCards($cardArray){
 			<div class="col-sm-2">
 				<div class="container">
 					<div class="card">
-						<center><img class="card-img-top" src="<?php echo $imgDir?>" alt="<?php echo $imgDir?>">
+						<center><img class="card-img-top" src="<?php echo $imgDir?>" alt="<?php echo $imgDir?>" style="border:1px solid black">
 						<div class="card-body">
 			        		<div class="overlay">
 				        	<h4 class="card-title"><?php echo "<br/>". $cardArray['SetName'] . "<br/>"?></h4>
