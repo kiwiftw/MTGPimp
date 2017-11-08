@@ -165,7 +165,7 @@ function addLanguages($conn){
 function getEditions($cardName){
 	#print($cardName);
 	$json = loadJson();
-	$edition = [];
+	$edition = array();
 	foreach($json[$cardName]["printings"] as $set){
 		array_push($edition, $set);
 	}
@@ -279,7 +279,7 @@ function outputCards($cardArray){
 				        	<h4 class="card-title"><?php echo "<br/>". $cardArray['SetName'] . "<br/>"?></h4>
 				        	<p class="card-text"><?php echo "Artist: " . $cardArray['Artist'] . "<br />" .
 				        								"Border: " . $cardArray['Border'] . "<br />" .
-				        								"Foil: "   . $cardArray['Foil'] . "<br />" .
+				        								"Foil: "   . $foilDir . "<br />" .
 				        								"Frame: " . $cardArray['Frame'] . "<br />" . 
 				        								"Language: " . $cardArray['Languages'][$x]?></p>
 				    		</div>
@@ -300,7 +300,7 @@ function langConvert($language){
 			$shortLang = "en";
 			break;
 		case "French":
-			$shortLang = "fe";
+			$shortLang = "fr";
 			break;
 		case "German": 
 			$shortLang = "de";
@@ -340,7 +340,8 @@ function writeToFile($file, $data){
 	fclose($file);
 }
 
-function scrapeSpecific($set, $language){
+function scrapeSpecific($set){
+	$errors = 0;
 	$jsonData = file_get_contents('./AllSets.json', true);
 	$json = json_decode($jsonData, true);
 	writeToFile("./cardScrapeLog.log", "Updating card image catalog <br />");
@@ -349,58 +350,57 @@ function scrapeSpecific($set, $language){
 
 	# Revamp.  We know the short set as that's what user is inputting to admin page. 
 
-	$json[$set];
-/*	foreach($json as $key => $value){
+	$languageArray = getSetLanguages($conn, $set);
+	$mcSet = $json[$set]['magicCardsInfoCode'];
+	foreach($languageArray as $language){
+		$data = "Starting scraping of " . $language . " " . $set;
+		writeToFile("./cardScrapeLog.log", $data);
 
-		if($key == $set){
-			$languageArray = getSetLanguages($conn, $set);
-			$mcSet = $json[$key]['magicCardsInfoCode'];
+		$shortLang = langConvert($language);
 
-			$data = "Starting scraping of " . $set;
-			writeToFile("./cardScrapeLog.log", $data);
+		$cards = $json[$set]['cards'];
+		$cardCount = count($cards);
+		for($x=0;$x<$cardCount;$x++){
+			$cardName = $json[$set]['cards'][$x]['name'];
+			if($cardNumber = $json[$set]['cards'][$x]['mciNumber']){
+				$card = getCard($conn, $cardName);
+				#$shortLang = langConvert($language);		
+				$mcSet = strtolower($mcSet);
+				# Parser for magiccards.info
 
-			$cards = $json[$key]['cards'];
-			$cardCount = count($cards);
-			for($x=0;$x<$cardCount;$x++){
-				$cardName = $json[$key]['cards'][$x]['name'];
-				if($cardNumber = $json[$key]['cards'][$x]['mciNumber']){
-					$card = getCard($conn, $cardName);
-					#$shortLang = langConvert($language);		
-					$mcSet = strtolower($mcSet);
-					# Parser for magiccards.info
+				$cardURL = "https://magiccards.info/scans/" . $shortLang . "/" . $mcSet . "/" . $cardNumber . ".jpg";
+				#$cardURL = "https://magiccards.info/scans/en/" . $mcSet . "/" . $cardNumber . ".jpg";
+				
+				# Parser for starcitygames
+				# $cardURL = "http://static.starcitygames.com/sales/cardscans/MTG/" . $set . "/en/nonfoil/" . $artCardName . ".jpg";
+		
+				$dir = '../img/' . $set . '/nonfoil/' . $language . '/';
+				#$dir = '../img/' . $set . '/nonfoil/English/';
+				if(!file_exists($dir)){
+					mkdir($dir, 0755, true);
+					$errors = error_Get_last();
+				}
 
-					#$cardURL = "https://magiccards.info/scans/" . $shortLang . "/" . $mcSet . "/" . $cardNumber . ".jpg";
-					$cardURL = "https://magiccards.info/scans/en/" . $mcSet . "/" . $cardNumber . ".jpg";
-					
-					# Parser for starcitygames
-					# $cardURL = "http://static.starcitygames.com/sales/cardscans/MTG/" . $set . "/en/nonfoil/" . $artCardName . ".jpg";
-			
-					$dir = '../img/' . $set . '/nonfoil/' . $language . '/';
-					#$dir = '../img/' . $set . '/nonfoil/English/';
-					if(!file_exists($dir)){
-						mkdir($dir, 0755, true);
-						$errors = error_Get_last();
-					}
+				$img = $dir . $cardName . '.jpg';
 
-					$img = $dir . $cardName . '.jpg';
-
-					if(!file_exists($img)){
-						if(!copy($cardURL, $img)){
+				if(!file_exists($img)){
+					if(!copy($cardURL, $img)){
+						if($errors == 0){
 							$data = "Error finding " . $cardName . " on magiccards.info.  " . $cardURL;
 							writeToFile("./cardScrapeLog.log", $data); 
-						} else { }
-					}
-				} else { 
-					$data = "Error finding mciNumber for " . $cardName;
-					writeToFile("./cardScrapeLog.log", $data); 
+							$errors = 1;
+						} else {}
+					} else { }
 				}
-			#$x++;
-			} #while ($cardName != '');
-		} else { 
-			#Don't do anything cause we're not gonna scrape that set! 
+			} else { 
+				#$data = "Error finding mciNumber for " . $cardName;
+				#writeToFile("./cardScrapeLog.log", $data); 
+			}
 		}
 	}
-	*/
+    $fileName = "./cardScrapeLog.log";
+    $newFileName = "./cardScrapeLog" . $set . ".log";
+    rename($fileName, $newFileName);
 }
 
 ?>

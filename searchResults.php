@@ -5,7 +5,7 @@ include($_SERVER['DOCUMENT_ROOT'] . "/bootstrap/html/header.html");
 ## Declare Variables
 $functionsFile = $_SERVER['DOCUMENT_ROOT'] . "/Admin/functions.php";
 include($functionsFile);
-$setArray = [];
+$setArray = array();
 $lastCardName = "";
 $conn = getConnection();
 
