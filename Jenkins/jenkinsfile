@@ -1,0 +1,40 @@
+#!groovy
+def IP = ''
+def InstanceId = ''
+
+pipeline {
+    agent any
+    stages {
+        stage('Create Server'){
+            steps{
+                script {
+                    // create new server
+                    def spawnServer = sh(script: "aws ec2 run-instances --image-id ami-c58c1dd3 --count 1 --instance-type t2.micro --key-name test --security-group-ids sg-ac6666de sg-8687dff8 --subnet-id subnet-5ad80976 --tag-specifications 'ResourceType=instance,Tags=[{Key=Type,Value=PHP}]' --query 'Instances[0].[PrivateIpAddress, InstanceId]'", returnStdout: true).trim()
+                    spawnServer = spawnServer.replaceAll("[\\s\\n\\r\\t\\[\\]]", "");
+                    IP = spawnServer.substring(0,spawnServer.indexOf(","))
+                    InstanceId = spawnServer.substring(spawnServer.indexOf(",") + 1, spawnServer.length())
+                }
+            }
+        }
+        stage('Configure Server'){
+            steps{
+                build job: 'App Server Setup', parameters:[string(name:'IP',value:"$IP"), string(name:"InstanceId", value:"$InstanceId")]
+            }
+        }
+        stage('Deploy Code'){
+            steps{
+                build job: 'MTG Pimp Deploy', parameters:[string(name:'IP',value:"$IP")]
+            }
+        }
+        stage('Smoke Test'){
+            steps{
+                build job: 'Smoke Test', parameters:[string(name:'IP',value:"$IP")]
+            }
+        }
+        stage('Add Server to Target Group'){
+            steps{
+                sh script: "echo 'placeholder'", returnStdout: true
+            }
+        }
+    }
+}
